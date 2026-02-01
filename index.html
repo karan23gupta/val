@@ -251,6 +251,23 @@
     .lock-in-text.visible {
       opacity: 1;
     }
+
+    .mind-blown-gif {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: clamp(100px, 28vw, 160px);
+      height: auto;
+      border-radius: 12px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      object-fit: contain;
+    }
+
+    .mind-blown-gif.visible {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -412,13 +429,20 @@
         lockInText.className = 'lock-in-text';
         lockInText.textContent = "It's a YES ❤️";
 
+        const mindBlownImg = document.createElement('img');
+        mindBlownImg.className = 'mind-blown-gif';
+        mindBlownImg.src = 'blow-mind-mind-blown.gif';
+        mindBlownImg.alt = '';
+
         stage.appendChild(centerHeart);
         stage.appendChild(burstContainer);
         stage.appendChild(lockInText);
+        stage.appendChild(mindBlownImg);
         document.body.appendChild(stage);
 
         setTimeout(function () {
           lockInText.classList.add('visible');
+          mindBlownImg.classList.add('visible');
         }, 1000);
       }
 
