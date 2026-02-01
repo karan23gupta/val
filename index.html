@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will you be my Valentine? ❤️</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ffe4ec 0%, #ffd6e0 50%, #ffc9d4 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 20px;
+      overflow-x: hidden;
+      transition: background 1.2s ease;
+    }
+
+    body.yes-moment {
+      background: linear-gradient(135deg, #ffdde5 0%, #ffd0db 50%, #ffc4d1 100%);
+    }
+
+    .card {
+      position: relative;
+      width: min(420px, 100%);
+      min-height: 380px;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(255, 105, 135, 0.25), 0 4px 20px rgba(0, 0, 0, 0.06);
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow: visible;
+    }
+
+    .emoji {
+      font-size: 64px;
+      margin-bottom: 20px;
+      line-height: 1;
+      animation: float 2.5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .question {
+      font-size: clamp(1.25rem, 4vw, 1.6rem);
+      font-weight: 700;
+      color: #2d2d2d;
+      text-align: center;
+      line-height: 1.35;
+      margin-bottom: 32px;
+    }
+
+    .buttons-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-yes {
+      padding: 16px 40px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #ff6b8a 0%, #ee5a6f 100%);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(238, 90, 111, 0.4);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      z-index: 2;
+    }
+
+    .btn-yes:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 28px rgba(238, 90, 111, 0.5);
+    }
+
+    .btn-yes:active {
+      transform: scale(0.98);
+    }
+
+    /* No button: position absolute relative to .card so we can move it anywhere in the card;
+       pointer-events: none so it's never clickable */
+    .btn-no {
+      position: absolute;
+      padding: 8px 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #666;
+      background: #e8e8e8;
+      border: none;
+      border-radius: 24px;
+      cursor: default;
+      pointer-events: none;
+      transition: left 0.2s ease-out, top 0.2s ease-out;
+      z-index: 3;
+    }
+
+    .success-content {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .success-emoji {
+      font-size: 56px;
+      margin-bottom: 16px;
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .success-text {
+      font-size: clamp(1.3rem, 4vw, 1.6rem);
+      font-weight: 700;
+      color: #2d2d2d;
+      line-height: 1.4;
+    }
+
+    /* Floating hearts container */
+    .hearts {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 24px;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 20px;
+      opacity: 0.7;
+      animation: floatUp 4s ease-in forwards;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(-120px) scale(1);
+        opacity: 0;
+      }
+    }
+
+    /* --- Yes moment: full-screen heart explosion --- */
+    body.yes-moment .card {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .center-heart {
+      font-size: clamp(80px, 22vw, 140px);
+      line-height: 1;
+      opacity: 0;
+      transform: scale(0.3);
+      animation: centerHeartScale 0.7s ease-out 0.1s forwards;
+    }
+
+    @keyframes centerHeartScale {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .burst-hearts {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .burst-heart {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      font-size: clamp(14px, 4vw, 22px);
+      opacity: 0;
+      animation: burstThenFloat var(--duration, 2.8s) ease-out var(--delay, 0s) forwards;
+    }
+
+    /* Burst outward from center, then float up with drift and fade */
+    @keyframes burstThenFloat {
+      0% {
+        transform: translate(-50%, -50%) scale(0.4);
+        opacity: 0;
+      }
+      8% {
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.9);
+        opacity: 0.85;
+      }
+      25% {
+        transform: translate(calc(-50% + var(--tx) + var(--drift-x, 0px)), calc(-50% + var(--ty) - 20px)) scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translate(calc(-50% + var(--tx) + var(--drift-x, 0px)), calc(-50% + var(--ty) - var(--rise, 200px))) scale(0.9);
+        opacity: 0;
+      }
+    }
+
+    .lock-in-text {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+      font-weight: 500;
+      color: rgba(80, 50, 55, 0.85);
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .lock-in-text.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="card-inner" id="cardInner">
+      <div class="emoji" aria-hidden="true">🐱‍❤️‍🐱</div>
+      <!-- Replace "My Love" with your partner's name -->
+      <p class="question" id="question">My Love, will you be my Valentine? ❤️</p>
+      <div class="buttons-wrap" id="buttonsWrap">
+        <button type="button" class="btn-yes" id="btnYes">Yes</button>
+      </div>
+    </div>
+    <button type="button" class="btn-no" id="btnNo">No</button>
+    <div class="hearts" id="hearts" aria-hidden="true"></div>
+  </div>
+
+  <script>
+    (function () {
+      const card = document.getElementById('card');
+      const cardInner = document.getElementById('cardInner');
+      const buttonsWrap = document.getElementById('buttonsWrap');
+      const btnYes = document.getElementById('btnYes');
+      const btnNo = document.getElementById('btnNo');
+
+      const EVADE_DISTANCE = 80;       // No button evades when cursor is within this many px
+      const YES_GROW_PER_ESCAPE = 0.05; // How much the Yes button scales up each time No moves
+      const MAX_YES_SCALE = 1.35;      // Cap so Yes doesn't grow forever
+
+      let yesScale = 1;
+      let lastEvadeTime = 0;
+      const EVADE_COOLDOWN_MS = 150;   // Slight cooldown so it doesn't jitter
+
+      /**
+       * No-button evasion:
+       * We listen for mousemove, compute distance from cursor to the No button's center.
+       * When distance < EVADE_DISTANCE, we pick a new random position inside the card
+       * (keeping the button fully inside) and set the button's left/top (relative to .card).
+       */
+      function getRect(el) {
+        return el.getBoundingClientRect();
+      }
+
+      function randomInRange(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function moveNoButton() {
+        const cardRect = getRect(card);
+        const noRect = getRect(btnNo);
+        const padding = 12;
+
+        const minX = padding;
+        const maxX = cardRect.width - noRect.width - padding;
+        const minY = padding;
+        const maxY = cardRect.height - noRect.height - padding;
+
+        const newLeft = randomInRange(minX, Math.max(minX, maxX));
+        const newTop = randomInRange(minY, Math.max(minY, maxY));
+
+        btnNo.style.left = newLeft + 'px';
+        btnNo.style.top = newTop + 'px';
+      }
+
+      /**
+       * Yes-button growth:
+       * Each time the No button evades, we increase the Yes button's scale slightly
+       * (capped at MAX_YES_SCALE) for a playful effect.
+       */
+      function growYesButton() {
+        yesScale = Math.min(yesScale + YES_GROW_PER_ESCAPE, MAX_YES_SCALE);
+        btnYes.style.transform = 'scale(' + yesScale + ')';
+      }
+
+      // Initialize No button position: place it in the lower area of the card, next to where Yes lives
+      function initNoButtonPosition() {
+        const cardRect = getRect(card);
+        const noRect = getRect(btnNo);
+        const padding = 12;
+        const newLeft = randomInRange(padding, cardRect.width - noRect.width - padding);
+        const newTop = randomInRange(cardRect.height * 0.6, cardRect.height - noRect.height - padding);
+        btnNo.style.left = newLeft + 'px';
+        btnNo.style.top = newTop + 'px';
+      }
+      initNoButtonPosition();
+
+      function checkDistanceAndEvade(clientX, clientY) {
+        const now = Date.now();
+        if (now - lastEvadeTime < EVADE_COOLDOWN_MS) return;
+
+        const noRect = getRect(btnNo);
+        const cx = noRect.left + noRect.width / 2;
+        const cy = noRect.top + noRect.height / 2;
+        const dx = clientX - cx;
+        const dy = clientY - cy;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < EVADE_DISTANCE) {
+          lastEvadeTime = now;
+          moveNoButton();
+          growYesButton();
+        }
+      }
+
+      document.addEventListener('mousemove', function (e) {
+        checkDistanceAndEvade(e.clientX, e.clientY);
+      });
+
+      // Mobile: evade when finger gets close to the No button
+      document.addEventListener('touchmove', function (e) {
+        if (e.touches.length) checkDistanceAndEvade(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+
+      /**
+       * Yes-button click: full-screen heart explosion → lock-in moment.
+       * Hide card, warm background, center heart scales up, burst hearts float up, then small text.
+       */
+      const HEART_CHARS = ['❤️', '💕', '💗', '💖'];
+      const BURST_COUNT = 28;
+
+      function runYesMoment() {
+        document.body.classList.add('yes-moment');
+
+        const stage = document.createElement('div');
+        stage.className = 'stage';
+
+        const centerHeart = document.createElement('div');
+        centerHeart.className = 'center-heart';
+        centerHeart.setAttribute('aria-hidden', 'true');
+        centerHeart.textContent = '❤️';
+
+        const burstContainer = document.createElement('div');
+        burstContainer.className = 'burst-hearts';
+
+        for (let i = 0; i < BURST_COUNT; i++) {
+          const el = document.createElement('span');
+          el.className = 'burst-heart';
+          el.textContent = HEART_CHARS[Math.floor(Math.random() * HEART_CHARS.length)];
+
+          const angle = (Math.PI * 2 * i) / BURST_COUNT + Math.random() * 0.5;
+          const burstDist = 40 + Math.random() * 80;
+          const tx = Math.cos(angle) * burstDist;
+          const ty = Math.sin(angle) * burstDist;
+          const driftX = (Math.random() - 0.5) * 60;
+          const rise = 120 + Math.random() * 180;
+          const duration = 2.2 + Math.random() * 1.2;
+          const delay = 0.25 + Math.random() * 0.4;
+
+          el.style.setProperty('--tx', tx + 'px');
+          el.style.setProperty('--ty', ty + 'px');
+          el.style.setProperty('--drift-x', driftX + 'px');
+          el.style.setProperty('--rise', rise + 'px');
+          el.style.animationDuration = duration + 's';
+          el.style.animationDelay = delay + 's';
+
+          burstContainer.appendChild(el);
+        }
+
+        const lockInText = document.createElement('p');
+        lockInText.className = 'lock-in-text';
+        lockInText.textContent = "It's a YES ❤️";
+
+        stage.appendChild(centerHeart);
+        stage.appendChild(burstContainer);
+        stage.appendChild(lockInText);
+        document.body.appendChild(stage);
+
+        setTimeout(function () {
+          lockInText.classList.add('visible');
+        }, 1000);
+      }
+
+      btnYes.addEventListener('click', function () {
+        runYesMoment();
+      });
+    })();
+  </script>
+</body>
+</html>
